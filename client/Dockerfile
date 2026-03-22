@@ -1,32 +1,33 @@
-# Use official Node.js 14 as base image
-FROM node:16.20.2-buster-slim as build
+ARG NODE_VERSION=16-buster-slim
+ARG NGINX_VERSION=alpine
 
-# Set working directory
-WORKDIR /usr/src/app
+# Use node image for base image for all stages.
+FROM node:${NODE_VERSION} AS builder
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Set working directory for all build stages.
+WORKDIR /app
 
-# Install dependencies
-RUN npm install
+COPY package.json package-lock.json* ./
 
-# Copy the rest of the client code
+RUN --mount=type=cache,target=/root/.npm npm ci
+
+# Copy the rest of the source files into the image.
 COPY . .
 
 RUN mv .env.example .env
-
-# Build the client for production
+# Run the build script.
 RUN npm run build
 
+## stage 2
+FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runner
 
-FROM nginx:alpine
-# Copy the build artifacts from the build stage
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
-# NGINX default configuration file
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 8080
+COPY --chown=nginx:nginx --from=builder /app/dist /usr/share/nginx/html
+
+USER nginx
+
 EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
-
+ENTRYPOINT ["nginx", "-c", "/etc/nginx/nginx.conf"]
+CMD ["-g", "daemon off;"]
