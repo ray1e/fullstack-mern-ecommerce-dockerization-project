@@ -1,6 +1,7 @@
 ARG NODE_VERSION=16-buster-slim
 ARG NGINX_VERSION=alpine
 
+
 # Use node image for base image for all stages.
 FROM node:${NODE_VERSION} AS builder
 
@@ -15,6 +16,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 COPY . .
 
 RUN mv .env.example .env
+
 # Run the build script.
 RUN npm run build
 
