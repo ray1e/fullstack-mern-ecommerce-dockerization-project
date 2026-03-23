@@ -1,0 +1,35 @@
+services:
+  server:
+    image: ${dockerId}/server
+    build: server
+    container_name: server
+    env_file:
+      - .env
+    command: 
+      sh -c "npm run seed:db ${ADMIN_EMAIL} ${ADMIN_PASSWORD} && npm start"
+    ports:
+      - '3000:3000'
+    depends_on: 
+      - mongo
+    networks: 
+      - MERN-network
+    
+  client:
+    image: ${dockerId}/client
+    build: client
+    container_name: client
+    ports:
+      - '8080:8080'
+    networks:
+      - MERN-network
+  
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    networks:
+      - MERN-network
+  
+networks:
+  MERN-network:
