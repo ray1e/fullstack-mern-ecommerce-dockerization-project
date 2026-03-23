@@ -1,0 +1,14 @@
+## The name of the workflow
+name: Build and Push Docker Image 
+
+on: 
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+
+jobs:
+  
+  
