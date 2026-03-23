@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Build and Push Docker Image
 
 on:
   push:
@@ -9,10 +9,30 @@ on:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
-
+    
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - 
+        name: checkout code
+        uses: actions/checkout@v4
+    
+    -
+        name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+            username: ${{vars.DOCKERHUB_USERNAME}}
+            password: ${{secrets.DOCKERHUB_TOKEN}}
+    -
+        name: Build and Push server
+        uses: docker/build-push-action@v7
+        with:
+            context: ./server
+            push: true
+            tags: 0xray1e/server
+    -
+        name: build and push client
+        uses: docker/build-push-action@v7
+        with: 
+            context: ./client
+            push: true
+            tags: 0xray1e/client
